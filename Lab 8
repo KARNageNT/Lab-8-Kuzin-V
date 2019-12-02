@@ -1,0 +1,353 @@
+//main.cpp
+#include <iostream>
+#include <fstream>
+
+#include "module.h"
+
+
+
+
+using namespace std;
+int main()
+{
+	ofstream fout1("MyFile.txt", ios::trunc);//Попереднє очищення файлів, в які будемо записувати дані при потребі
+	ofstream fout2("MyFile1.txt", ios::trunc);
+	ofstream fout3("MyFile2.txt", ios::trunc);
+	List s;
+	List q;
+	List w;
+	int choice;//Змінна для вибору певного пункту меню
+	cout << "Enter a number of elements: " << endl;
+	int n;
+	cin >> n;//Вводимо початкову кількість елементів списку, з яким плануємо працювати
+	
+	s.EnterList(n);//Початкове заповнення основного списку
+	
+
+
+	while (choice = Menu()) {//Цикл, який виводить меню функцій, які можна викликати
+
+		switch (choice) {
+		case 1: {
+			cout << "Main list: " << endl;
+			s.OutList();//Виводимо основний список
+			break;
+		}
+		case 2: {
+			double number;//Змінна елементу , який хочемо додати
+			cout << "Enter an element: " << endl;
+			cin >> number;//Вводимо цей елемент
+			s.ToAdd(number);//Додаємо елемент до списку
+			break;
+		}
+		case 3: {
+			s.Remove();//Викликаємо функцію видалення 
+			break;
+		}
+		case 4: {
+
+			s.Split(q, w);//Будуємо 2 списки за основним списком
+			cout << "New first list" << endl;
+			q.OutList();//Виводимо перший утворений список
+			cout << "New second list" << endl;
+			w.OutList();//Виводимо другий утворений список
+			
+			break;
+
+		}
+		case 5: {
+			w.NegDel();//Видаляємо перший від'ємний елеиент з другого списку
+			w.OutList();//Виводимо другий список
+			break;
+		}
+		case 6: {
+			s.AddToFile();//Виводимо списки в файли
+			break;
+		}
+		default:
+			break;
+
+				
+		}
+				
+		
+	}
+	return 0;
+}
+//module.h
+#pragma once
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+struct node//Структура елементу списку
+{
+
+	 double value;
+	node* next;//Вказівник на наступний елемент
+	node* prev;//Вказівник на попередній елемент
+	node() {
+		value = 0;
+	}
+	node(int value) {
+		this->value = value;
+	}
+	
+	
+};
+
+
+struct List	//Струкура списку
+{
+
+	node element;
+	node* next;//Вказівник на наступний елемент
+	List(node element)
+	{
+
+		this->element = element;
+		next = NULL;
+
+	}
+	node* first;//Вказівник на початок списку
+	node* last;//Вказівник на кінець списку
+	node* current;//Вказівник на поточний елемент
+	
+
+	List()
+	{
+		first = last = NULL;
+	}
+	void EnterList(int n);//Функція початкового заповнення списку
+	void OutList();//Функція виведення списку
+	void ToAdd(double number);//Функція додавання елементу до списку
+	void Remove();//Функція видалення потрібного елементу зі списку
+	void Split(List& positive, List& other);//Функція побудови 2-х нових списків за основним списком
+	void ClearList();//Функція видалення всіх елементів зі списку
+	void NegDel();//Функція, яка видаляє перший від'ємний елемент списку
+	void AddToFile();//Функція, яка записує елементи списків до 3-х файлів
+};
+int Menu(); //Функція,яка виводить меню функцій, які можна викликати
+//module.cpp
+#include "module.h"
+
+using namespace std;
+
+void List::EnterList(int n)
+{
+	
+	node element = *(new node());
+		first = last = new node (element);//Новий елемент буде першим в списку, і останнім одночасно(список порожній)
+		cout << "Enter elements : ";
+		cin>>last->value;//Вводимо елемент списку
+		for (int i = 1;i < n;i++) {//Цикл, в якому вводимо n елементів
+			last->next = new node(element);//Виділяємо пам'ять під новий елемент списку, який є останнім
+			last = last->next;//Переходимо від останнього елементу до наступного
+			cin >> last->value;//Вводимо елемент списку
+		}
+	
+	last ->next = NULL;//Останньому елементу присвоюємо значення NULL
+	
+	
+}
+
+int Menu() {
+	int choice;//Змінна для вибору певного пункту меню
+	//Функції, які користувач може викликати
+	cout << "\n------------------------------------------------------------" << endl;
+	cout << ("Menu") << endl;
+	cout << ("1 - Show List") << endl;
+	cout << ("2 - Add an element") << endl;
+	cout <<  ("3 - Delete an element with some value") <<  endl;
+	cout << ("4 - Split list") << endl;
+	cout << ("5 - Delete first negative element from second list") << endl;
+	cout << ("6 - Print into file") << endl;
+	cout << ("0 - Exit") << endl;
+
+	cout << "> ";
+	cin >> choice;//Вводимо значення змінної відповідно до обраної функції
+	cout << "------------------------------------------------------------\n" << endl;
+	return choice;//Повертаємо це значення
+}
+
+void List::OutList() {
+	node* current =this-> first;//Поточний елемент вказує на перший елемент списку
+	
+	while (current!=NULL)//Проходимося по списку
+	{
+		cout << current->value << endl;//Виводимо елемент списку
+		current = current->next;//Наступний елемент стає поточним
+	}
+}
+
+
+void List::ToAdd(double number) {
+	node element = *(new node(number));
+
+	if (last != NULL)//Якщо спиисок не порожній
+	{
+		last->next = new node(element);//
+		last = last->next;
+		last->next = NULL;
+	}
+	else//Якщо в списку немає елементів
+	{
+		first = last = new node(element);
+		first->next = NULL;
+		last->next = NULL;
+		last = first;
+	}
+}
+void List::Split(List& positive, List& other) {
+	positive.ClearList();//Попередньо видаляємо всі елементи списку, викликаючи функцію видалення всіх елементів
+	other.ClearList();//-------------||---------------
+	node* curr = this->first;
+	while (curr != NULL) {
+		if (curr->value > 0) {//Якщо елемент більше нуля
+			positive.ToAdd(curr->value);//Додаємо його до першого списку, викликаючи функцію додавання елементу
+		}
+			
+		else {//Інакше
+			other.ToAdd(curr->value);//Додаємо його до другого списку
+		}
+		curr = curr->next;
+		}
+	
+}
+
+
+void List::Remove()
+{
+	int e;
+	cout << "Enter a value of element: ";
+	cin >> e;//Вводимо значення елементу , який хочемо видалити зі списку
+	if (!first) //Якщо список порожній - повертаємося
+		return;
+	
+	node* prev = 0;
+	node* curr = this-> first;
+	
+	
+	// Йдемо по списку
+	while (curr!=NULL)
+	{
+		if (curr->value == e)//Якщо поточний елемент, є елементом , який ми хочемо видалити
+		{
+			if (prev != NULL) {//Якщо це не перший елемент
+				prev->next = curr->next;//Попередній елемент стає поточним
+				curr = curr->next;//Поточний - наступним
+			}
+			else {//Якщо видаляємо перший елемент
+				first = curr->next;//Перший елемент стає поточним
+			
+				curr = curr->next;//Поточний - наступним
+			
+			}
+			
+			
+			break;
+		}
+		prev = curr;
+		curr = curr->next;
+	}
+	
+
+	
+}
+void List::ClearList() {
+	if (!first)
+		return;
+	while (first) {//Поки існує перший елемент
+		last = first->next;
+		delete first;
+		first = last;
+	}
+}
+
+void List::NegDel() {
+	if (!first)
+		return;
+
+	node* prev = 0;
+	node* curr =this-> first;
+	while (curr != NULL)
+	{
+		if (curr->value<0)//Якщо елемент - від'ємний
+		{
+			if (prev != NULL) {////Якщо це не перший елемент
+				prev->next = curr->next;//Попередній елемент стає поточним
+				curr = curr->next;//Поточний - наступним
+			}
+			else {//Якщо видаляємо перший елемент
+				first = curr->next;//Перший елемент стає поточним
+			
+				curr = curr->next;//Поточний - наступним
+
+			}
+			break;
+		}
+		prev = curr;
+		curr = curr->next;
+	}
+}
+void List::AddToFile()
+{
+	
+	ofstream fout("MyFile.txt", ios::in | ios::app);//Файл, в який записуються дані
+	if (fout)
+	{
+		node* curr = this->first;
+		while (curr != NULL)
+		{
+			fout << curr->value << " ";
+			curr = curr->next;
+
+		}
+		cout << endl;
+		fout.close();//Закриття файлу
+		cout << "Data successfully recorded" << endl;
+	}
+	else//Якщо файл не відкривається
+	{
+		cout << "Error, writing to file is not possible!" << endl;
+	}
+	node* curr = this->first;
+	if (fout)
+	{
+		while (curr != NULL)
+		{
+			ofstream fout("MyFile1.txt", ios::in | ios::app);//Файл, в який записуються дані
+
+			if (curr->value > 0) {
+				fout << curr->value << " ";
+				curr = curr->next;
+
+
+
+				cout << endl;
+				fout.close();//Закриття файлу
+				cout << "Data successfully recorded" << endl;
+			}
+			else {
+				ofstream fout("MyFile2.txt", ios::in | ios::app);//Файл, в який записуються дані
+
+
+				fout << curr->value << " ";
+				curr = curr->next;
+
+
+				cout << endl;
+				fout.close();//Закриття файлу
+				cout << "Data successfully recorded" << endl;
+
+			}
+			}
+		}
+	
+	
+	
+		else//Якщо файл не відкривається
+		{
+			cout << "Error, writing to file is not possible!" << endl;
+		}
+}
